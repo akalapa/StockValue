@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Value Screener - หุ้นไทย</title>
+<link rel="stylesheet" href="/style.css">
+<script>
+  (function () {
+    var saved = localStorage.getItem("theme");
+    if (saved === "light" || saved === "dark") {
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  })();
+</script>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <button id="themeToggle" class="theme-toggle" title="สลับธีมสว่าง/มืด" aria-label="สลับธีมสว่าง/มืด">🌙</button>
+    <h1>Value Screener <span class="set-badge">SET / mai</span></h1>
+    <p class="tagline">"ราคาคือสิ่งที่คุณจ่าย มูลค่าคือสิ่งที่คุณได้รับ" — เราตามหากิจการที่ราคาต่ำกว่ามูลค่า ไม่ใช่หุ้นที่ราคากำลังวิ่ง</p>
+  </div>
+</header>
+
+<main>
+  <section class="controls" id="controls">
+    <div class="control-group">
+      <label>ค้นหา</label>
+      <input type="text" id="search" placeholder="ชื่อหุ้น หรือ สัญลักษณ์...">
+    </div>
+    <div class="control-group">
+      <label>Margin of Safety ขั้นต่ำ: <span id="mosVal">0%</span></label>
+      <input type="range" id="mosMin" min="-50" max="80" value="0" step="5">
+    </div>
+    <div class="control-group price-range-group">
+      <label>ช่วงราคา: <span id="priceVal">0 - ไม่กำหนด</span></label>
+      <div class="dual-slider">
+        <input type="range" id="priceMin" min="0" max="400" value="0" step="5">
+        <input type="range" id="priceMax" min="0" max="400" value="400" step="5">
+      </div>
+    </div>
+    <div class="control-group">
+      <label>P/E สูงสุด: <span id="peVal">ไม่กำหนด</span></label>
+      <input type="range" id="peMax" min="0" max="40" value="40" step="1">
+    </div>
+    <div class="control-group">
+      <label>ROE ขั้นต่ำ: <span id="roeVal">0%</span></label>
+      <input type="range" id="roeMin" min="0" max="30" value="0" step="1">
+    </div>
+    <div class="control-group checkbox-group">
+      <label><input type="checkbox" id="onlyProfitable" checked> เฉพาะกิจการที่มีกำไร</label>
+    </div>
+    <div class="control-group checkbox-group">
+      <label><input type="checkbox" id="onlyGrowingProfit"> เฉพาะกิจการที่มีกำไรโตต่อเนื่อง</label>
+    </div>
+    <div class="control-group checkbox-group">
+      <label><input type="checkbox" id="onlyRisingPrice"> เฉพาะหุ้นที่ราคาวิ่งขึ้นต่อเนื่อง <span class="momentum-tag">Momentum</span></label>
+    </div>
+    <div class="control-group">
+      <button id="refreshBtn">รีเฟรชข้อมูล</button>
+    </div>
+  </section>
+
+  <section class="status" id="status">กำลังโหลดข้อมูล...</section>
+
+  <section class="table-wrap">
+    <table id="stockTable">
+      <thead>
+        <tr>
+          <th data-key="symbol"><span class="th-label">สัญลักษณ์</span><span class="sort-arrow"></span></th>
+          <th data-key="name"><span class="th-label">ชื่อบริษัท</span><span class="sort-arrow"></span></th>
+          <th data-key="sector"><span class="th-label">กลุ่ม</span><span class="sort-arrow"></span></th>
+          <th data-key="price"><span class="th-label">ราคา</span><span class="sort-arrow"></span></th>
+          <th data-key="graham_number"><span class="th-label">มูลค่าที่แท้จริง (Graham)</span><span class="sort-arrow"></span></th>
+          <th data-key="margin_of_safety"><span class="th-label">Margin of Safety</span><span class="sort-arrow"></span></th>
+          <th data-key="pe"><span class="th-label">P/E</span><span class="sort-arrow"></span></th>
+          <th data-key="pb"><span class="th-label">P/B</span><span class="sort-arrow"></span></th>
+          <th data-key="roe"><span class="th-label">ROE</span><span class="sort-arrow"></span></th>
+          <th data-key="debt_to_equity"><span class="th-label">D/E</span><span class="sort-arrow"></span></th>
+          <th data-key="dividend_yield"><span class="th-label">ปันผล</span><span class="sort-arrow"></span></th>
+          <th data-key="profit_growth_streak_years"><span class="th-label">กำไรโตต่อเนื่อง</span><span class="sort-arrow"></span></th>
+          <th data-key="price_growth_streak_years"><span class="th-label">ราคาวิ่งขึ้นต่อเนื่อง</span><span class="sort-arrow"></span></th>
+          <th data-key="checklist_score"><span class="th-label">เกณฑ์ผ่าน</span><span class="sort-arrow"></span></th>
+          <th data-key="value_score"><span class="th-label">คะแนน</span><span class="sort-arrow"></span></th>
+          <th data-key="verdict"><span class="th-label">สรุป</span><span class="sort-arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </section>
+
+  <section class="legend">
+    <h2>หลักเกณฑ์การประเมิน (Graham's Defensive Investor Checklist)</h2>
+    <ul>
+      <li><b>มูลค่าที่แท้จริง (Graham Number)</b> = √(22.5 × กำไรต่อหุ้น × มูลค่าทางบัญชีต่อหุ้น) — ประมาณการมูลค่าแบบระมัดระวัง</li>
+      <li><b>Margin of Safety</b> = (มูลค่าที่แท้จริง − ราคาตลาด) / มูลค่าที่แท้จริง — ยิ่งสูงยิ่งปลอดภัย</li>
+      <li>เกณฑ์ 9 ข้อ: P/E ≤ 15, P/B ≤ 1.5, P/E×P/B ≤ 22.5, Current Ratio ≥ 2, หนี้สิน/ทุน ≤ 100%, มีกำไร, ROE ≥ 15%, จ่ายปันผล, กำไรโตต่อเนื่องทุกปี (ไม่มีปีที่กำไรลดลง จากงบย้อนหลังที่มีข้อมูลฟรี ~4-5 ปี)</li>
+      <li><b>Deep Value</b>: MOS ≥ 30% และผ่านเกณฑ์ ≥ 5/9 ข้อ &nbsp;|&nbsp; <b>Undervalued</b>: MOS ≥ 10% &nbsp;|&nbsp; <b>Fair Value</b>: −10% ถึง 10% &nbsp;|&nbsp; <b>Overvalued</b>: ต่ำกว่า −10%</li>
+      <li><b>ราคาวิ่งขึ้นต่อเนื่อง (Momentum)</b> — ตัวกรองเสริมแยกต่างหาก บอกว่าราคาปิดสิ้นปีปรับขึ้นทุกปีติดต่อกันหรือไม่ <u>ไม่ได้นับรวมในคะแนนหรือเกณฑ์ Graham ด้านบน</u> เพราะเป็นข้อมูลราคา ไม่ใช่มูลค่าพื้นฐาน — ใช้ด้วยความระมัดระวัง เพราะหุ้นที่ราคาวิ่งมาแล้วมักจะแพงกว่ามูลค่าที่แท้จริง</li>
+    </ul>
+    <p class="disclaimer">ข้อมูลจาก Yahoo Finance (ฟรี, ไม่มีค่าใช้จ่าย) ใช้เพื่อการศึกษาเท่านั้น ไม่ใช่คำแนะนำการลงทุน โปรดตรวจสอบงบการเงินฉบับเต็มก่อนตัดสินใจลงทุนเสมอ</p>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>
