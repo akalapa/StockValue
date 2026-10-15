@@ -1,0 +1,12 @@
+body { font-family: "Sarabun", "Noto Sans Thai", "Thonburi", "Leelawadee UI", sans-serif; line-height: 1.75; margin: 0 4%; }
+h1 { font-size: 1.6em; margin-top: 1.2em; border-bottom: 2px solid #1f6f5c; padding-bottom: .3em; color: #1f6f5c; }
+h2 { font-size: 1.25em; margin-top: 1.4em; color: #1f4f6f; }
+h3 { font-size: 1.05em; margin-top: 1.2em; }
+p { margin: .6em 0; text-align: left; }
+table { border-collapse: collapse; width: 100%; margin: 1em 0; font-size: .92em; }
+th, td { border: 1px solid #999; padding: .35em .5em; vertical-align: top; }
+th { background: #e8f1ee; }
+blockquote { margin: 1em 0; padding: .5em 1em; border-left: 4px solid #1f6f5c; background: #f3f7f6; }
+code { font-family: monospace; background: #f1f1f1; padding: 0 .2em; }
+pre { background: #f1f1f1; padding: .6em; white-space: pre-wrap; }
+li { margin: .25em 0; }
